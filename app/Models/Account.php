@@ -40,7 +40,12 @@ class Account extends Model
         'password' => 'hashed',
     ];
 
-    public function auth($email, $password){
+    
 
-    }
+
+
+
+
+
+    
 }

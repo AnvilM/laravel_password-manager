@@ -21,11 +21,7 @@ class AccountController extends Controller
      */
     public function store(Request $request)
     {
-        $account = new Account();
-        $account->id = Str::uuid();
-        $account->email = $request->post('email');
-        $account->password = $request->post('password');
-        $account->save();
+        //Регистрация нового аккаунта
     }
 
     /**
@@ -33,7 +29,7 @@ class AccountController extends Controller
      */
     public function show(string $id)
     {
-        echo $id;
+        
     }
 
     /**

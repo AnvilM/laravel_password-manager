@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sessions', function (Blueprint $table) {
-            $table->uuid('id');
+            $table->id('id');
+            $table->id('account_id');
+            $table->string('token');
             $table->string('ip');
             $table->string('location');
             $table->string('platform');

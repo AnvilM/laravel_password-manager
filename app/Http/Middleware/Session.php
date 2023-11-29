@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\SessionHelper;
 use App\Models\Session as SessionModel;
 use Closure;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class Session
     public function handle(Request $request, Closure $next): Response
     {
         $session_id = $request->header('session_id');
+
         if($session_id == ''){
             return response()->json(['error' => 'Unauthorized'], 401);
         }

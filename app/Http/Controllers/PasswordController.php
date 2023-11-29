@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+
 use Illuminate\Http\Request;
+use App\Helpers\SessionHelper;
+use App\Models\Account;
+use App\Models\Password;
 
 class PasswordController extends Controller
 {
@@ -19,7 +23,8 @@ class PasswordController extends Controller
      */
     public function store(Request $request)
     {
-        //
+       
+
     }
 
     /**
@@ -33,9 +38,9 @@ class PasswordController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $pass_id)
     {
-        //
+        
     }
 
     /**
