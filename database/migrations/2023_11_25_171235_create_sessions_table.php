@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sessions', function (Blueprint $table) {
-            $table->id('id');
-            $table->id('account_id');
-            $table->string('token');
+        Schema::create('sessions', function (Blueprint $table)
+        {
+            $table->id();
+            $table->integer('account_id');
+            $table->string('session_token', 64);
             $table->string('ip');
             $table->string('location');
             $table->string('platform');

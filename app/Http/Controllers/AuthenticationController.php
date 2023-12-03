@@ -6,64 +6,178 @@ use App\Models\Account;
 use App\Models\Session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Jenssegers\Agent\Facades\Agent;
+use Jenssegers\Agent\Agent;
 use Stevebauman\Location\Facades\Location;
+use Illuminate\Support\Str;
+use phpseclib3\Crypt\RSA;
+use App\Helpers\SessionHelper;
 
 class AuthenticationController extends Controller
 {
-    public function login(Request $request){
-        $email = $request->post('email');
-        $password = $request->post('password');
+    /** 
+     * API Authentication
+     *
+     * @param  Request $request
+     * @return string $token - API Authentication token.
+     */
+    public function signin(Request $request)
+    {
 
-        if($email == '' || $password == ''){
-            return response()->json(['error' => 'Unauthorized'], 401);
+        //Get account from email.
+        $Account = new Account();
+        $Account = $Account->where('email', $request->post('email'))->get();
+
+
+
+        //If account exists.
+        if ($Account->count() == 0)
+        {
+            return response('Unauthorized', 401);
         }
 
-        $account = new Account();
-        if($account->where('email', $email)->count() < 1 || !Hash::check($password, $account->where('email', $email)->pluck('password')->first())){
-            return response()->json(['error' => 'Unauthorized'], 401);
+        //If password correct.
+        if (!Hash::check($request->post('password'), $Account->pluck('password')->first()))
+        {
+            return response('Unauthorized', 401);
         }
 
-        if($account->where('email', $email)->where('verified', 1)->count() < 1){
-            return response()->json(['error' => 'Email not confirmed'], 401);
+        //If email verified.
+        if ($Account->pluck('verified')->first() == 0)
+        {
+            return response('Email not confirmed', 401);
         }
+
+
+
+        //Generate session token.
+        $payload = [
+            'email' => $request->post('email'),
+            'id' => $Account->pluck('id')[0]
+        ];
+
+        $token = SessionHelper::generateToken($payload);
+
+
+        //Get account ID.
+        $accountId = $Account->pluck('id')[0];
+
+        //Get session token from session token
+        $session_token = explode('.', $token)[0];
+
+        //Get client IP.
+        $ip = "178.155.4.141"; //$request->ip();
+
+        //Get client location.
+        $position = Location::get($ip);
+
+        $location = "{$position->cityName}, {$position->countryName}";
+
+        //Get client platform and browser.
+        $Agent = new Agent();
+
+        $platform = $Agent->platform();
+
+        $app = $Agent->browser();
+
+
+
+        //Save session.
+        $Session = new Session();
+
+        $Session->account_id = $accountId;
+
+        $Session->session_token = $session_token;
+
+        $Session->ip = $ip;
+
+        $Session->location = $location;
+
+        $Session->platform = $platform;
+
+        $Session->app = $app;
+
+        $Session->save();
+
+
+
+        //Return token.
+        return response($token);
+    }
+
+    /**
+     * Signup users.
+     *
+     * @param  Request $request
+     * @return void
+     */
+    public function signup(Request $request)
+    {
+        //Email, password validation.
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|min:8'
+        ]);
+
+
+        //TODO: Здесть нужно реальзовать отправку токена на почту
+
+        $token = hash('sha256', Str::random() . $request->post('email')); //TODO: потом это удалить
+
 
         $Account = new Account();
 
-        //Id аккаунта для которого генерируется сессия
-        $account_id = $Account->where('email', $email)->where 
+        //Checks if account alredy exists.
+        if ($Account->where('email', $request->post('email'))->where('verified', 0)->count() == 0)
+        {
+            //Save account.
+            $Account->email = $request->post('email');
 
-        //Генерация токена сессии
-        $token = hash('sha256', Str::uuid());
+            $Account->password = $request->post('password');
 
-        //IP клиента
-        $ip =  $request->getClientIp();
+            $Account->verify_token = $token;
 
-        //Оперционная система клиента
-        $platform = Agent::platform();  
+            $Account->save();
+        }
 
-        //Приложение клиента
-        $app = Agent::browser();
+        //For exists account update verify_token.
+        else
+        {
+            $Account->where('email', $request->post('email'))->where('verified', 0)->update([
+                'verify_token' => $token
+            ]);
+        }
 
-        //Местоположение клиента
-        $location = Location::get($ip);
-        $location = "{$location->cityName}, {$location->countryName}";
 
-        $session = new Session();
+        return response($token); //TODO:потом это удалить
+    }
 
-        $session->account_id = $account->where('email', $email)->pluck('id')->first();
-        $session->id = $session_id;
-        $session->ip = $ip;
-        $session->location = $location;
-        $session->platform = $platform;
-        $session->app = $app;
-        $session->save();
-    
-        return response()->json([
-            'session_id' => $session_id
+    /**
+     * Verify user email.
+     *
+     * @param  Request $request
+     * @return void
+     */
+    public function verifyEmail(Request $request)
+    {
+        //Get verify token from url.
+        $verify_token = $request->route('verify_token');
+
+
+        //Get account from verify token.
+        $Account = new Account();
+
+
+        //Checks if account exists.
+        if ($Account->where('verify_token', $verify_token)->count() == 0)
+        {
+            return response('Invalid token', 422);
+        }
+
+
+        //Update account verified and verify_token.
+        $Account->where('verify_token', $verify_token)->update([
+            'verified' => true,
+            'verify_token' => null
         ]);
-
-        
     }
 }

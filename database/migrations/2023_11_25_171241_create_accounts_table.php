@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('accounts', function (Blueprint $table) {
+        Schema::create('accounts', function (Blueprint $table)
+        {
             $table->id();
             $table->string('email')->unique();
             $table->string('password');
             $table->boolean('verified')->default(false);
-            $table->string('verify_token')->nullable();
+            $table->string('verify_token', 64)->nullable();
         });
     }
 

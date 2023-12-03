@@ -17,29 +17,37 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-//Signin, Signup
-Route::prefix('auth')->group(function(){
-    Route::post('login', [AuthenticationController::class, 'login']);
-    Route::post('signup', [AccountController::class, 'store']);
+//Authentication.
+Route::prefix('auth')->group(function ()
+{
+    Route::post('signin', [AuthenticationController::class, 'signin']);
+
+    Route::post('signup', [AuthenticationController::class, 'signup']);
+
+    Route::post('signup/verify/{verify_token}', [AuthenticationController::class, 'verifyEmail']);
 });
 
 
-
-Route::middleware('session')->group(function(){
-
-    Route::prefix('account')->controller(AccountController::class)->group(function(){
-        
-    });
-
-    Route::prefix('password')->controller(PasswordController::class)->group(function(){
-        Route::post('/', 'store');
-    });
-
-    Route::prefix('session')->group(function(){
-
-    });
+//Accounts.
+Route::get('/account/{id}', [AccountController::class, 'show'])->middleware('session');
 
 
+//Passwords.
+Route::prefix('password')->controller(PasswordController::class)->middleware('session')->group(function ()
+{
 
+    //Create password.
+    Route::post('', 'store');
 
+    //Delete password.
+    Route::delete('/{id}', 'delete');
+
+    //Update password.
+    Route::put('/{id}', 'update');
+
+    //Get password.
+    Route::get('/{id}', 'show');
+
+    //Get all client passwords
+    Route::get('', 'index');
 });

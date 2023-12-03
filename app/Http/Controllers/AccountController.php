@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Helpers\SessionHelper;
+
 
 class AccountController extends Controller
 {
@@ -17,19 +19,10 @@ class AccountController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //Регистрация нового аккаунта
-    }
-
-    /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request)
     {
-        
     }
 
     /**

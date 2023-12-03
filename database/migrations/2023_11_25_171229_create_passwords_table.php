@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('passwords', function (Blueprint $table) {
-            $table->id('id');
-            $table->id('account_id');
+        Schema::create('passwords', function (Blueprint $table)
+        {
+            $table->id();
+            $table->integer('account_id');
+            $table->string('name');
             $table->string('password');
             $table->string('description')->nullable();
             $table->timestamp('time');
