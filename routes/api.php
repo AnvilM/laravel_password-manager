@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\SessionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -49,5 +50,19 @@ Route::prefix('password')->controller(PasswordController::class)->middleware('se
     Route::get('/{id}', 'show');
 
     //Get all client passwords
+    Route::get('', 'index');
+});
+
+
+//Sessions
+Route::prefix('session')->controller(SessionController::class)->middleware('session')->group(function ()
+{
+    //Delete session
+    Route::delete('/{id}', 'delete');
+
+    //Get session
+    Route::get('/{id}', 'show');
+
+    //Get all clien sessions
     Route::get('', 'index');
 });
